@@ -1,14 +1,12 @@
-# C++ Boilerplate
-[![Build Status](https://travis-ci.org/dpiet/cpp-boilerplate.svg?branch=master)](https://travis-ci.org/dpiet/cpp-boilerplate)
-[![Coverage Status](https://coveralls.io/repos/github/dpiet/cpp-boilerplate/badge.svg?branch=master)](https://coveralls.io/github/dpiet/cpp-boilerplate?branch=master)
+# Monocular Visual Odometry
+[![Build Status](https://travis-ci.org/rohit517/Self-Driving-Car.svg?branch=master)](https://travis-ci.org/rohit517/Self-Driving-Car)
+[![Coverage Status](https://coveralls.io/repos/github/rohit517/Self-Driving-Car/badge.svg?branch=master)](https://coveralls.io/github/rohit517/Self-Driving-Car?branch=master)
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/rohit517/Self-Driving-Car/blob/master/LICENSE)
 ---
 
 ## Overview
 
-Simple starter C++ project with:
-
-- cmake
-- googletest
+Monocular Visual Odometry using OpenCV/C++. 
 
 ## Standard install via command-line
 ```
