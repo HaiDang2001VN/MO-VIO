@@ -23,13 +23,48 @@
  *****************************************************************************/
 
 #include <iostream>
-#include "Movio.cpp"
+#include <string>
+#include <Movio.hpp>
+#include "opencv2/core/core.hpp"
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/opencv.hpp"
+#include "opencv2/features2d/features2d.hpp"
+#include "opencv2/calib3d/calib3d.hpp"
 
-int main(int argc, char* argv[])
-{
-  // Initialize odom object.
-  // Path test :"/home/rohit/Opencv codes/Oxford_dataset/stereo/centre/"
-  Movio mv(argv[1], false);
-  mv.startOdom();
-  return 0;
+using namespace cv;
+using namespace std;
+
+Movio::Movio(string filepath, bool debug) {
+  this->filepath = filepath;
+  this->debug = debug;
+  cout << " **** Monocular Visual Odometry initialized **** \nFilepath: "
+       << this->filepath
+       << "\nDebug: " << boolalpha << debug << endl;
+}
+
+Movio::~Movio() {
+}
+
+bool Movio::startOdom() {
+  vector<String> filenames;
+  namedWindow("Image", 1);
+
+  glob(filepath, filenames);
+  cout << "Total " << filenames.size() << " images found\n.";
+
+  for (size_t i = 0; i < filenames.size(); ++i) {
+    cout << "Image: " << filenames[i] << endl;
+    Mat src = imread(filenames[i]);
+
+    if (!src.data)
+      cerr << "Problem loading image!!!" << endl;
+
+    imshow("Image", src);
+
+    if (waitKey(30) >= 0)
+      break;
+  }
+
+  return true;
 }

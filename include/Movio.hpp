@@ -22,14 +22,25 @@
  SOFTWARE.
  *****************************************************************************/
 
-#include <iostream>
-#include "Movio.cpp"
+#ifndef MOVIO_HPP
+#define MOVIO_HPP
 
-int main(int argc, char* argv[])
-{
-  // Initialize odom object.
-  // Path test :"/home/rohit/Opencv codes/Oxford_dataset/stereo/centre/"
-  Movio mv(argv[1], false);
-  mv.startOdom();
-  return 0;
-}
+#include <iostream>
+#include <string>
+#include <opencv2/core/core.hpp>
+
+using namespace std;
+using namespace cv;
+
+class Movio {
+ private:
+  string filepath;
+  bool debug;
+ public:
+  Movio(string filepath, bool debug);
+  ~Movio();
+  bool startOdom();
+};
+
+
+#endif
