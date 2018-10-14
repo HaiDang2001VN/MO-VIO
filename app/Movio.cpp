@@ -25,14 +25,9 @@
 #include <iostream>
 #include <string>
 #include <Movio.hpp>
-#include "opencv2/core/core.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/opencv.hpp"
-#include "opencv2/features2d/features2d.hpp"
-#include "opencv2/calib3d/calib3d.hpp"
 
 using namespace cv;
+using namespace cv::xfeatures2d;
 using namespace std;
 
 Movio::Movio(string filepath, bool debug) {
@@ -51,20 +46,93 @@ bool Movio::startOdom() {
   namedWindow("Image", 1);
 
   glob(filepath, filenames);
-  cout << "Total " << filenames.size() << " images found\n.";
+  cout << "Total " << filenames.size() << " images found.\n";
 
-  for (size_t i = 0; i < filenames.size(); ++i) {
-    cout << "Image: " << filenames[i] << endl;
-    Mat src = imread(filenames[i]);
+  // Creating a surf object
+  Ptr<xfeatures2d::SURF> surf = xfeatures2d::SURF::create(400);
 
-    if (!src.data)
+  for (size_t i = 0; i < filenames.size() - 1; ++i) {
+//    cout << "Current Image: " << filenames[i] << "\t Next image: "
+//         << filenames[i + 1] << endl;
+
+    Mat currentFrame = imread(filenames[i]);
+    Mat nextFrame = imread(filenames[i + 1]);
+
+    if (!currentFrame.data || !nextFrame.data) {
+      cout << " Error reading images " << endl;
+      return false;
+    }
+
+    vector<Point2f> currentFrameKeypoints, nextFrameKeypoints;
+
+    // Detect surf features for the current frame
+    Movio::getSURFFeatures(currentFrame, surf, currentFrameKeypoints);
+//    Movio::getFastFeatures(currentFrame, currentFrameKeypoints);
+
+    // Track the same features in the next frame
+    Movio::trackFeatures(currentFrame, nextFrame, currentFrameKeypoints,
+                         nextFrameKeypoints);
+
+    vector<KeyPoint> kp;
+    KeyPoint::convert(nextFrameKeypoints, kp);
+    drawKeypoints(nextFrame, kp, nextFrame);
+
+
+
+    if (!currentFrame.data)
       cerr << "Problem loading image!!!" << endl;
 
-    imshow("Image", src);
+    imshow("Image", nextFrame);
 
-    if (waitKey(30) >= 0)
+    if (waitKey(1) >= 0)
       break;
   }
 
   return true;
 }
+
+void Movio::getSURFFeatures(const Mat& src, Ptr<xfeatures2d::SURF> detector,
+                            vector<Point2f>& keypoints) {
+  vector<KeyPoint> keyPoint;
+  detector->detect(src, keyPoint);
+  KeyPoint::convert(keyPoint, keypoints);
+  cout << "\tSURF features: Found " << keypoints.size()
+       << " key-points in the image." << endl;
+}
+
+void Movio::getFastFeatures(const Mat& src, vector<Point2f>& keypoints) {
+  vector<KeyPoint> keyPoint;
+  FAST(src, keyPoint, 20, true);
+  KeyPoint::convert(keyPoint, keypoints, vector<int>());
+  cout << "\tFast features: Found " << keypoints.size()
+       << " key-points in the image." << endl;
+}
+
+void Movio::trackFeatures(const Mat& src1, const Mat& src2,
+                          vector<Point2f>& point1, vector<Point2f>& point2) {
+  vector<uchar> status;
+  vector<float> error;
+  Size windowSize = Size(25, 25);
+
+  // Track features using KLT
+  calcOpticalFlowPyrLK(src1, src2, point1, point2, status, error, windowSize,
+                       3);
+
+  if (point1.size() != point2.size()) {
+    cout
+        << "Track features: Features tracked does not have same dimension. Point1: "
+        << point1.size() << "Point2: " << point2.size() << endl;
+    return;
+  }
+  // Remove out points where tracking failed
+  int falseCount = 0;
+  for (size_t i = 0; i < point2.size(); i++) {
+    Point2f pt = point2.at(i - falseCount);
+    if ((status.at(i) == 0) || (pt.x < 0) || (pt.y < 0)) {
+      point1.erase(point1.begin() + (i - falseCount));
+      point2.erase(point2.begin() + (i - falseCount));
+      falseCount++;
+    }
+  }
+}
+

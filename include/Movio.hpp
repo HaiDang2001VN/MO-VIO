@@ -27,7 +27,13 @@
 
 #include <iostream>
 #include <string>
+#include "opencv2/opencv.hpp"
 #include <opencv2/core/core.hpp>
+#include "opencv2/features2d.hpp"
+#include "opencv2/xfeatures2d.hpp"
+#include "opencv2/highgui.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/calib3d/calib3d.hpp"
 
 using namespace std;
 using namespace cv;
@@ -40,6 +46,11 @@ class Movio {
   Movio(string filepath, bool debug);
   ~Movio();
   bool startOdom();
+  void getSURFFeatures(const Mat& src, Ptr<xfeatures2d::SURF> detector,
+                       vector<Point2f>& keypoints);
+  void getFastFeatures(const Mat& src, vector<Point2f>& keypoints);
+  void trackFeatures(const Mat& src1, const Mat& src2, vector<Point2f>& point1,
+                     vector<Point2f>& point2);
 };
 
 
